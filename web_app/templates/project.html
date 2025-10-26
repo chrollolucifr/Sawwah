@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+<section class="project-section">
+    <div class="project-container">
+        <h2>Hi there! How Can I help you?</h2>
+        <form id="text_form">
+            <input type="text" id="user_input" placeholder="Type your question here...">
+            <button type="submit">Send</button>
+        </form>
+
+        <h2>Tired of typing? Try to record your question</h2>
+        <div id="record_buttons">
+            <button id="start_record">Start Recording</button>
+            <button id="stop_record" disabled>Stop Recording</button>
+        </div>
+
+        <div id="answer"></div>
+        <p><small>Note: Frontend calls Colab API at ngrok URL.</small></p>
+    </div>
+</section>
+
+<script>
+const COLAB_API_BASE = "{{ COLAB_API_BASE | default('') }}";
+const answerDiv = document.getElementById("answer");
+
+// Text question
+document.getElementById("text_form").onsubmit = async (e) => {
+    e.preventDefault();
+    const text = document.getElementById("user_input").value;
+    answerDiv.innerHTML = "<p>Processing your question...</p>";
+    try {
+        const resp = await fetch("/ask", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text })
+        });
+        const data = await resp.json();
+        answerDiv.innerHTML = `<div class="answer-card">
+                                    <strong>Answer:</strong> ${data.answer}
+                               </div>`;
+    } catch(err) {
+        answerDiv.innerHTML = `<p>Error: ${err}</p>`;
+    }
+};
+
+// Voice question
+let mediaRecorder;
+let audioChunks = [];
+
+document.getElementById("start_record").onclick = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    audioChunks = [];
+    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    mediaRecorder.start();
+    document.getElementById("start_record").disabled = true;
+    document.getElementById("stop_record").disabled = false;
+};
+
+document.getElementById("stop_record").onclick = () => {
+    mediaRecorder.stop();
+    document.getElementById("start_record").disabled = false;
+    document.getElementById("stop_record").disabled = true;
+
+    mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        const formData = new FormData();
+        formData.append("audio_file", audioBlob, "recorded.wav");
+        formData.append("voice_submit", "1");
+
+        answerDiv.innerHTML = "<p>Processing audio...</p>";
+        try {
+            const resp = await fetch("/voice", {
+                method: "POST",
+                body: formData
+            });
+            const data = await resp.json();
+            let audioTag = "";
+            if(data.audio_data){
+                audioTag = `<audio controls autoplay>
+                                <source src="data:audio/mpeg;base64,${data.audio_data}" type="audio/mpeg">
+                            </audio>`;
+            }
+            answerDiv.innerHTML = `<div class="answer-card">
+                                        <strong>Answer:</strong> ${data.answer || data.text}
+                                        ${audioTag}
+                                   </div>`;
+        } catch(err) {
+            answerDiv.innerHTML = `<p>Error: ${err}</p>`;
+        }
+    };
+};
+</script>
+</div>
+
+{% endblock %}

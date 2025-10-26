@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Camera — SAWWAH</title>
+  <style>
+    /* 
+       CSS Variables & Base Styling
+     */
+    :root { --ink:#111; --bg:#f6f7fb; --card:#fff; --brand:#6c63ff; }
+    body{margin:0; font-family:system-ui,Segoe UI,Roboto,Arial; background:var(--bg); color:var(--ink)}
+    .wrap{max-width:920px; margin:24px auto; padding:16px}
+    .card{background:var(--card); border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,.08); padding:16px}
+    h1{font-size:22px; margin:0 0 12px}
+    .row{display:flex; gap:16px; flex-wrap:wrap}
+    video, canvas, img{width:100%; max-width:560px; border-radius:12px; background:#000}
+    button{padding:10px 16px; border-radius:10px; border:none; background:var(--brand); color:#fff; cursor:pointer; font-size:15px}
+    button[disabled]{opacity:.5; cursor:not-allowed}
+    .muted{color:#666; font-size:14px}
+    .status{margin-top:8px}
+    .count{font-weight:700}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Auto Snapshot in 5s — Browser Camera</h1>
+      <p class="muted">Click <b>Start</b> — camera opens, count 5 seconds, take snapshot, play audio message.</p>
+
+      <div class="row">
+        <div>
+          <!-- Video element to show camera feed -->
+          <video id="cam" autoplay playsinline muted></video>
+          <div style="margin:10px 0; display:flex; gap:8px; align-items:center;">
+            <button id="startBtn">Start</button>
+            <button id="stopBtn" disabled>Stop</button>
+            <span id="status" class="status muted"></span>
+          </div>
+        </div>
+
+        <div>
+          <!-- Hidden canvas to capture snapshot -->
+          <canvas id="snap" width="640" height="480" style="display:none"></canvas>
+          <!-- Preview the snapshot -->
+          <img id="preview" alt="Preview will appear here after snapshot" />
+          <div style="margin-top:8px;">
+            <a id="downloadLink" href="#" download="snapshot.jpg" style="display:none">Download Snapshot</a>
+          </div>
+
+          <!-- Audio player -->
+          <audio id="player" preload="auto" style="display:none; margin-top:10px"></audio>
+          <button id="playBtn" style="display:none; margin-top:8px;">Play Audio</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// Grab DOM Elements
+const cam = document.getElementById('cam');
+const startBtn = document.getElementById('startBtn');
+const stopBtn  = document.getElementById('stopBtn');
+const statusEl = document.getElementById('status');
+const countEl  = document.querySelector('.count');
+const canvas   = document.getElementById('snap');
+const ctx      = canvas.getContext('2d');
+const preview  = document.getElementById('preview');
+const player   = document.getElementById('player');
+const playBtn  = document.getElementById('playBtn');
+const downloadLink = document.getElementById('downloadLink');
+
+// URL of the MP3 to play (from Flask static folder)
+const MP3_URL_BASE = "{{ url_for('static', filename='response.mp3') }}";
+
+let stream = null;
+let countdownTimer = null;
+let audioCtx = null;
+
+// Prime Audio to allow autoplay
+async function primeAudio() {
+  try {
+    // 1) Initialize Web Audio API to unlock sound
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC && !audioCtx) {
+      audioCtx = new AC();
+      await audioCtx.resume();
+    }
+    // 2) Tiny play/pause to unlock <audio>
+    player.src = MP3_URL_BASE + "?prime=" + Date.now();
+    await player.play().then(()=>{ player.pause(); player.currentTime = 0; }).catch(()=>{});
+  } catch(e) { /* ignore errors */ }
+}
+
+// Start camera and countdown
+async function startCam(){
+  try{
+    // Request video access
+    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    cam.srcObject = stream;
+    startBtn.disabled = true;
+    stopBtn.disabled  = false;
+    statusEl.textContent = "Camera ready — counting down 5s...";
+    
+    // Wait 5 seconds before taking snapshot
+    await startCountdown(5);
+    await takeSnapshotAndSpeak();
+  }catch(err){
+    console.error(err);
+    statusEl.textContent = "Failed to start camera. Allow permission in browser.";
+  }
+}
+
+// Stop camera and cleanup
+function stopCam(){
+  try{
+    if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+    if (stream){
+      stream.getTracks().forEach(t=>t.stop());
+      stream = null;
+    }
+    startBtn.disabled = false;
+    stopBtn.disabled  = true;
+    statusEl.textContent = "Camera stopped.";
+  }catch(e){ console.log(e); }
+}
+
+// Countdown timer
+function startCountdown(seconds){
+  return new Promise((resolve)=>{
+    let remain = seconds;
+    countEl.textContent = remain;
+    countdownTimer = setInterval(()=>{
+      remain -= 1;
+      countEl.textContent = remain;
+      if(remain <= 0){
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+        resolve();
+      }
+    }, 1000);
+  });
+}
+
+// Capture snapshot & play audio
+async function takeSnapshotAndSpeak(){
+  const w = cam.videoWidth || 640;
+  const h = cam.videoHeight || 480;
+  canvas.width = w; canvas.height = h;
+  ctx.drawImage(cam, 0, 0, w, h);
+
+  // Show preview
+  preview.src = canvas.toDataURL('image/jpeg', 0.92);
+  downloadLink.href = preview.src;
+  downloadLink.style.display = "inline-block";
+
+  statusEl.textContent = "Snapshot taken ✓ — playing audio…";
+
+  // Play MP3 automatically
+  const ok = await playMP3();
+  if (!ok) {
+    // Show manual play button if autoplay blocked
+    playBtn.style.display = "inline-block";
+    playBtn.onclick = async () => { await playMP3(true); };
+    statusEl.textContent = "Snapshot taken ✓ — click button to play audio.";
+  }
+}
+
+// Play MP3 audio
+async function playMP3(forceShowPlayer=false){
+  try{
+    player.src = MP3_URL_BASE + "?ts=" + Date.now(); 
+    if (forceShowPlayer) player.style.display = "block";
+    await player.play();
+    statusEl.textContent = "Audio playing ✓";
+    return true;
+  }catch(e){
+    console.log("MP3 blocked:", e);
+    player.style.display = "block";
+    return false;
+  }
+}
+
+// Button event listeners
+startBtn.addEventListener('click', async () => {
+  await primeAudio();
+  await startCam();
+});
+stopBtn.addEventListener('click', stopCam);
+
+</script>
+</body>
+</html>
