@@ -85,3 +85,17 @@ All datasets were **cleaned and processed** in Python to ensure accuracy, consis
 
 The visual identity of **SAWWAH** is inspired by the color **Lavender**, officially adopted by the Kingdom of Saudi Arabia to welcome guests.  
 Lavender symbolizes **beauty, hospitality, and harmony with the desert**, perfectly reflecting SAWWAH’s vision of connecting **authentic Saudi culture** with **modern digital experiences**.
+
+
+
+---
+
+## 🚀 Installation & Setup
+
+Follow the steps below to download and run **SAWWAH** locally:
+
+### 1️⃣ Clone the Repository
+```bash
+git clone https://github.com/chrollolucifr/Sawwah.git
+cd Sawwah
+
